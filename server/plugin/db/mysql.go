@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
+	"log"
 	"server/config"
 )
 
@@ -12,6 +13,7 @@ var Mdb *gorm.DB
 
 func InitMysql() (err error) {
 	// client 相关属性设置
+	log.Print("dsn:", config.MysqlDsn)
 	Mdb, err = gorm.Open(mysql.New(mysql.Config{
 		DSN:                       config.MysqlDsn,
 		DefaultStringSize:         255,   //string类型字段默认长度

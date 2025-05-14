@@ -11,7 +11,7 @@
             </div>
             <div class="content">
                 <div class="film_item" v-for="m in data.list">
-                    <a :href="`/filmDetail?link=${m.id}`" :style="{backgroundImage: `url('${m.picture}')`}"></a>
+                    <a :href="`/filmDetail/${m.id}`" :style="{backgroundImage: `url('${m.picture}')`}"></a>
                     <div class="film_intro">
                         <h3>{{ m.name }}</h3>
                         <p class="tags">
@@ -67,13 +67,13 @@ const data = reactive({
 watch(
     [route],
     (oldRoute, newRoute) => {
-        refreshPage(router.currentRoute.value.query.search, router.currentRoute.value.query.current)
+        refreshPage(router.currentRoute.value.params.keyword, router.currentRoute.value.query.current)
     },
 )
 
 // 点击播放
 const play = (id: string | number) => {
-    location.href = `/play?id=${id}&episode=0&source=0`
+    location.href = `/play/${id}/0/0`
 }
 
 // 搜索按钮事件
@@ -82,7 +82,7 @@ const searchMovie = ()=>{
         ElMessage.error({message: '搜索信息不能为空', duration:1000})
         return
     }
-    location.href = location.href = `/search?search=${data.search}`
+    location.href = location.href = `/search/${data.search}`
 }
 
 // 执行搜索请求
@@ -100,15 +100,15 @@ const refreshPage = (keyword: any, current: any) => {
 }
 
 onMounted(() => {
-    if (router.currentRoute.value.query.search == null) {
+    if (router.currentRoute.value.params.keyword == null) {
         return
     }
-    refreshPage(router.currentRoute.value.query.search + '', router.currentRoute.value.query.current)
+    refreshPage(router.currentRoute.value.params.keyword + '', router.currentRoute.value.query.current)
 })
 // 分页器
 const changeCurrent = (currentVal: number) => {
     let query = router.currentRoute.value.query
-    location.href = `/search?search=${query.search}&current=${currentVal}`
+    location.href = `/search/${query.search}&current=${currentVal}`
 }
 
 </script>

@@ -3,7 +3,7 @@
     <template v-if="d.list.length > 0">
       <div class="item film-card" v-for="item in d.list" :style="{width: `calc(${d.width-1}%)`}">
         <div v-if="item.id != -99 && global.isMobile" class="hidden-md-and-up">
-          <a :href="`/filmDetail?link=${item.id}`" class="default_image link_content">
+          <a :href="`/filmDetail/${item.id}`" class="default_image link_content">
             <div class="tag_group">
               <span class="cus_tag ">{{ item.year ? item.year.slice(0, 4) : '未知' }}</span>
               <span class="cus_tag ">{{ item.cName }}</span>
@@ -12,13 +12,13 @@
             <span class="cus_remark hidden-md-and-up">{{ item.remarks }}</span>
             <img :src="item.picture" :alt="item.name?.split('[')[0]" @error="handleImg">
           </a>
-          <a :href="`/filmDetail?link=${item.id}`" class="content_text_tag">{{ item.name.split("[")[0] }}</a>
+          <a :href="`/filmDetail/${item.id}`" class="content_text_tag">{{ item.name.split("[")[0] }}</a>
           <span class="cus_remark hidden-md-and-down">{{ item.remarks }}</span>
         </div>
 
         <div v-if="!global.isMobile"  class="film-card-inner">
           <div class="film-card-front">
-            <a :href="`/filmDetail?link=${item.id}`" class="link_content">
+            <a :href="`/filmDetail/${item.id}`" class="link_content">
               <div class="tag_group">
                 <span class="cus_tag ">{{ item.year ? item.year.slice(0, 4) : '未知' }}</span>
                 <span class="cus_tag ">{{ item.cName }}</span>
@@ -35,7 +35,7 @@
             <el-button class="card-detail" :icon="Discount" color="#626aef" plain round @click="toDetail(item.id)" >详情</el-button>
           </div>
         </div>
-        <a v-if="!global.isMobile" :href="`/filmDetail?link=${item.id}`" class="content_text_tag hidden-sm-and-down">{{ item.name.split("[")[0] }}</a>
+        <a v-if="!global.isMobile" :href="`/filmDetail/${item.id}`" class="content_text_tag hidden-sm-and-down">{{ item.name.split("[")[0] }}</a>
 
       </div>
     </template>
@@ -65,7 +65,7 @@ const handleImg = (e: Event) => {
 }
 
 const toDetail = (id:any) =>{
-  location.href = `/filmDetail?link=${id}`
+  location.href = `/filmDetail/${id}`
 }
 
 // 监听父组件传递的参数的变化
@@ -76,7 +76,7 @@ watchEffect(() => {
   // 如果是PC, 为防止flex布局最后一行元素不足出现错位, 使用空元素补齐list
   let c = isMobile ? 3 : props.col ? props.col : 0
   let l: any = props.list
-  let len = l.length
+  let len = l?.length??0
   d.width = isMobile ? 31 : Math.floor(100 / c)
   if (len % c != 0) {
     for (let i = 0; i < c - len % c; i++) {

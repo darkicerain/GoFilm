@@ -16,12 +16,12 @@
       <div class="nav_link">
         <a href="/">首页</a>
         <template v-for="n in data.nav">
-          <a :href="`/filmClassify?Pid=${n.id}`">{{ n.name }}</a>
+          <a :href="`/filmClassify/${n.id}`">{{ n.name }}</a>
         </template>
       </div>
       <div class="history-link hidden-md-and-down" v-on:mouseenter="handleHistory(true)"
            v-on:mouseleave="handleHistory(false)">
-        <a :href="`/filmClassify?Pid=${nav.variety.id}`">
+        <a :href="`/filmClassify/${nav.variety.id}`">
           <b style="font-size: 22px;" class="iconfont icon-history"/>
         </a>
         <Transition name="fade-slide" duration="300">
@@ -61,7 +61,7 @@ import {Search, CircleClose} from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 import {ApiGet} from "../../utils/request";
 import {cookieUtil, COOKIE_KEY_MAP} from "../../utils/cookie";
-
+import {useSiteStore} from "../../store/site"
 // 搜索关键字
 const keyword = ref<string>('')
 // 弹窗隐藏显示
@@ -102,7 +102,7 @@ const searchFilm = () => {
     ElMessage.error({message: "请先输入影片名称关键字再进行搜索", duration: 1500})
     return
   }
-  location.href = `/search?search=${keyword.value}`
+  location.href = `/search/${keyword.value}`
   // router.push({path: '/search', query:{search: keyword.value}, replace: true})
 }
 
@@ -116,9 +116,12 @@ const nav = reactive({
 
 // 获取站点信息
 const getBasicInfo = () => {
+
   ApiGet(`/config/basic`).then((resp: any) => {
+    const siteStore=useSiteStore();
     if (resp.code === 0) {
       data.site = resp.data
+      siteStore.setSite(data.site)
     } else {
       ElMessage.error({message: resp.msg})
     }

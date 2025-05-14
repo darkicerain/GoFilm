@@ -223,7 +223,7 @@
       </el-form-item>
       <el-form-item v-if="data.film.id">
         <div class="film_view">
-          <a :href="`/filmDetail?link=${data.film.id}`" :style="{backgroundImage: `url('${data.film.picture}')`}"></a>
+          <a :href="`/filmDetail/${data.film.id}`" :style="{backgroundImage: `url('${data.film.picture}')`}"></a>
           <div class="film_intro">
             <h3>{{ data.film.name }}</h3>
             <p class="tags">

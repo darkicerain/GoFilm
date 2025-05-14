@@ -37,12 +37,12 @@ const routes = [
         component: IndexHome,
         redirect: '/index',
         children: [
-            {path: 'index', component: Home},
-            {path: 'filmDetail', component: FilmDetails},
-            {path: 'play', component: Play},
-            {path: 'search', component: SearchFilm},
-            {path: 'filmClassify', component: FilmClassify},
-            {path: 'filmClassifySearch', component: FilmClassifySearch},
+            {path: '/index', component: Home},
+            {path: '/filmDetail/:link', component: FilmDetails},
+            {name:'Play',path: '/play/:id/:source/:episode/:currentTime?', component: Play},
+            {name:'Search',path: '/search/:keyword', component: SearchFilm},
+            {name:'FilmClassify',path: '/filmClassify/:pid', component: FilmClassify},
+            {name:'FilmClassifySearch',path: '/filmClassifySearch/:Pid/Area/:Area?/Category/:Category?/Language/:Language?/Plot/:Plot?/Sort/:Sort?/Year/:Year?/current/:current?', component: FilmClassifySearch},
             {path: '/custom/player', component: CustomPlay},
             {path: '/history', component: FilmHistory},
         ]

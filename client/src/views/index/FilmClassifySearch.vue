@@ -1,9 +1,9 @@
 <template>
   <div class="container" v-if="d.title.name">
     <div class="title">
-      <a :href="`/filmClassify?Pid=${d.title.id}`" >{{ d.title.name }}</a>
+      <a :href="`/filmClassify/${d.title.id}`" >{{ d.title.name }}</a>
       <span class="line"/>
-      <a :href="`/filmClassifySearch?Pid=${d.title.id}`" class="h_active">{{ `${d.title.name}库` }}</a>
+      <router-link :to="{name:'FilmClassifySearch',params:{Pid:d.title.id}}" class="h_active">{{ `${d.title.name}库` }}</router-link>
     </div>
     <!--影片分类检索-->
     <div class="t_container">
@@ -37,13 +37,13 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, toRefs} from "vue";
+import {onMounted, reactive, toRefs, watch} from "vue";
 import {useRouter} from "vue-router";
 import {ApiGet} from "../../utils/request";
 import {ElMessage} from "element-plus";
 import {ArrowRightBold, ArrowLeftBold} from '@element-plus/icons-vue'
 import FilmList from "../../components/index/FilmList.vue";
-
+import { diff, addedDiff, deletedDiff, updatedDiff, detailedDiff } from 'deep-object-diff';
 // 页面所需数据
 const d = reactive({
   title: {},
@@ -74,6 +74,7 @@ const router = useRouter()
 // 点击分页按钮事件 current-change
 const changeCurrent = (currentVal: number) => {
   handleParams()
+
 }
 
 // 分类tag点击事件
@@ -83,21 +84,23 @@ const handleTag = (k:string,v:string)=>{
   // searchTag改变, 重置 current当前页码
   d.page.current = 1
   handleParams()
+
 }
 const handleParams = ()=> {
   let q = ''
-  for (let k in d.searchParams) {
-    let val = d.searchParams[k as keyof typeof d.searchParams]
-    if (val != '') {
-      q += `&${k}=${val}`
-    }
-  }
-  location.href = '/filmClassifySearch?'+q.slice(1)+`&current=${d.page.current}`
+  // for (let k in d.searchParams) {
+  //   let val = d.searchParams[k as keyof typeof d.searchParams]
+  //   // if (val != '') {
+  //     q += `/${k}/${val}`
+  //   // }
+  // }
+  router.push({name:"FilmClassifySearch",params:Object.assign({},d.searchParams,{current:d.page.current})})
+  // location.href = '/filmClassifySearch/'+q.slice(1)+`/current/${d.page.current}`
 }
 
 // 请求数据
 const getFilmData = () => {
-  let query = router.currentRoute.value.query
+  let query = router.currentRoute.value.params
   ApiGet(`/filmClassifySearch`, {...query}).then((resp: any) => {
     if (resp.code === 0) {
       d.title = resp.data.title
@@ -114,7 +117,9 @@ const getFilmData = () => {
 onMounted(() => {
   getFilmData()
 })
-
+watch(()=>Object.assign({},router.currentRoute.value),(to,from)=>{
+  getFilmData()
+},{deep:true})
 
 
 </script>

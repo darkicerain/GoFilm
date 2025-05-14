@@ -1,9 +1,9 @@
 <template>
   <div class="container"  v-if="d.content.news.length > 0">
     <div class="title">
-      <a :href="`/filmClassify?Pid=${d.title.id}`" class="h_active">{{ d.title.name }}</a>
+      <a :href="`/filmClassify/${d.title.id}`" class="h_active">{{ d.title.name }}</a>
       <span class="line"/>
-      <a :href="`/filmClassifySearch?Pid=${d.title.id}`">{{ `${d.title.name}库` }}</a>
+      <router-link :to="{name:'FilmClassifySearch',params:{Pid:d.title.id}}" class="">{{ `${d.title.name}库` }}</router-link>
     </div>
 
     <!--影片列表展示-->
@@ -11,21 +11,21 @@
       <div class="news">
         <div class="c_nav">
           <span class="c_nav_text silver">最新上映</span>
-          <a :href="`/filmClassifySearch?Pid=${d.title.id}&Sort=release_stamp`" class="c_nav_more ">更多<b class="iconfont icon-more"/></a>
+          <router-link :to="{name:'FilmClassifySearch',params:{Pid:d.title.id,Sort:'release_stamp'}}" class="c_nav_more ">更多<b class="iconfont icon-more"/></router-link>
         </div>
         <FilmList :col="7" :list="d.content.news"/>
       </div>
       <div class="news">
         <div class="c_nav">
           <span class="c_nav_text silver">排行榜</span>
-          <a :href="`/filmClassifySearch?Pid=${d.title.id}&Sort=hits`" class="c_nav_more ">更多<b class="iconfont icon-more"/></a>
+          <router-link :to="{name:'FilmClassifySearch',params:{Pid:d.title.id,Sort:'hits'}}" class="c_nav_more ">更多<b class="iconfont icon-more"/></router-link>
         </div>
         <FilmList :col="7" :list="d.content.top"/>
       </div>
       <div class="news">
         <div class="c_nav">
           <span class="c_nav_text silver">最近更新</span>
-          <a :href="`/filmClassifySearch?Pid=${d.title.id}&Sort=update_stamp`" class="c_nav_more ">更多<b class="iconfont icon-more"/></a>
+          <router-link :to="{name:'FilmClassifySearch',params:{Pid:d.title.id,Sort:'update_stamp'}}" class="c_nav_more ">更多<b class="iconfont icon-more"/></router-link>
         </div>
         <FilmList :col="7" :list="d.content.recent"/>
       </div>
@@ -42,6 +42,7 @@ import {onMounted, reactive} from "vue";
 import {useRouter} from "vue-router";
 import FilmList from "../../components/index/FilmList.vue";
 import {Bottom} from "@element-plus/icons-vue";
+import {useSiteStore} from "../../store/site";
 
 const d = reactive({
   title: {},
@@ -55,11 +56,14 @@ const d = reactive({
 
 const router = useRouter()
 const getFilmData = () => {
-  let query = router.currentRoute.value.query
-  ApiGet(`/filmClassify`, {Pid: query.Pid}).then((resp: any) => {
+  let query = router.currentRoute.value.params
+  ApiGet(`/filmClassify`, {Pid: query.pid}).then((resp: any) => {
+    const siteStore=useSiteStore();
     if (resp.code === 0 ) {
       d.title = resp.data.title
       d.content = resp.data.content
+      siteStore.setTitle(d.title)
+      siteStore.setDes(d.content)
     } else {
       ElMessage.error({message: resp.msg, duration: 1000})
     }

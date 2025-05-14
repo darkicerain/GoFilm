@@ -29,15 +29,16 @@
           <el-col :span="12" class="title">
             <span :class="`iconfont ${item.nav.name.search('电影') != -1?'icon-film':item.nav.name.search('剧') != -1?'icon-tv':item.nav.name.search('动漫')!= -1?'icon-cartoon':'icon-variety'}`"
                 style="color: #79bbff;font-size: 32px;margin-right: 10px; line-height: 130%"/>
-            <a :href="`/filmClassify?Pid=${item.nav.id}`">{{ item.nav.name }}</a>
+            <a :href="`/filmClassify/${item.nav.id}`">{{ item.nav.name }}</a>
           </el-col>
           <el-col :span="12">
             <ul v-if="!global.isMobile" class="nav_ul">
               <template v-for="(c,i) in item.nav.children">
-                <li class="nav_category" v-if="c.show && i < 6"><a
-                    :href="`/filmClassifySearch?Pid=${c.pid}&Category=${c.id}`">{{ c.name }}</a></li>
+                <li class="nav_category" v-if="c.show && i < 6">
+                  <router-link :to="{name:'FilmClassifySearch',params:{Pid:c.pid,Category:c.id}}"
+                  >{{ c.name }}</router-link></li>
               </template>
-              <li class="nav_category"><a :href="`/filmClassify?Pid=${item.nav.id}`">更多 ></a></li>
+              <li class="nav_category"><a :href="`/filmClassify/${item.nav.id}`">更多 ></a></li>
             </ul>
           </el-col>
         </el-row>
@@ -50,7 +51,7 @@
             <h3 class="hot_title">🔥热播{{ item.nav.name }}</h3>
             <template v-for="(m,i) in item.hot.slice(0,12)">
               <div class="content_right_item">
-                <a :href="`/filmDetail?link=${m.mid}`"><b class="top_item">{{ i + 1 + '.' }}</b>
+                <a :href="`/filmDetail/${m.mid}`"><b class="top_item">{{ i + 1 + '.' }}</b>
                   <span>{{ m.name }}</span></a>
               </div>
             </template>
@@ -86,7 +87,7 @@ const carousel = (index: number) => {
 }
 const skipLink = ()=>{
   if (data.banner.current.mid) {
-    router.push(`/filmDetail?link=`+data.banner.current.mid)
+    router.push(`/filmDetail/`+data.banner.current.mid)
   }
 }
 

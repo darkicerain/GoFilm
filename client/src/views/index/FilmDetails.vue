@@ -30,12 +30,12 @@
       <h2>{{ data.detail.name }}</h2>
       <ul class="tags">
         <li class="t_c">
-          <a :href="`/filmClassifySearch?Pid=${data.detail.pid}&Category=${data.detail.cid}`">
-            <el-icon>
+          <router-link :to="{name:'FilmClassifySearch',params:{Pid:data.detail.pid,Category:data.detail.cid}}" >
+          <el-icon>
               <Promotion/>
             </el-icon>
             {{ data.detail.descriptor.cName }}
-          </a>
+          </router-link>
         </li>
         <li v-if="data.detail.descriptor.classTag">
           {{ `${data.detail.descriptor.classTag}`.replaceAll(",", "&emsp;") }}
@@ -74,7 +74,9 @@
           <p class=" play-module-title">播放列表</p>
           <div class="play-tab-group">
             <a  href="javascript:;"  :class="`play-tab-item ${data.currentTabId == item.id ? 'tab-active':''}`"
-                v-for="item in data.detail.list" @click="changeTab(item.id)" >{{ item.name }}</a>
+                v-for="item in data.detail.list" @click="changeTab(item.id)" >{{ item.name }}
+              <span v-if="item.ping" :class="item.ping>300?'red':'green'">{{item.ping}}ms</span>
+            </a>
           </div>
         </div>
         <div class="play-list">
@@ -100,6 +102,10 @@ import {ApiGet} from "../../utils/request";
 import {ElMessage} from 'element-plus'
 import {Promotion, CaretRight} from "@element-plus/icons-vue";
 import RelateList from "../../components/index/RelateList.vue";
+import {useSiteStore} from "../../store/site";
+import Ping from "../../utils/speed";
+
+const p = new Ping();
 // 获取路由对象
 const router = useRouter()
 const data = reactive({
@@ -163,7 +169,8 @@ const changeTab = (id:string)=>{
 
 // 选集播放点击事件
 const play = (change: { source: string, episode: number }) => {
-  router.push({path: `/play`, query: {id: `${router.currentRoute.value.query.link}`, ...change}})
+  console.log("play!!!")
+  router.push({name: 'Play', params: {id: `${router.currentRoute.value.params.link}`, ...change}})
 }
 
 // 内容展开收起效果
@@ -181,8 +188,9 @@ const showContent = (flag: boolean) => {
 
 // 页面加载数据初始化
 onBeforeMount(() => {
-  let link = router.currentRoute.value.query.link
+  let link = router.currentRoute.value.params.link
   ApiGet('/filmDetail', {id: link}).then((resp: any) => {
+    const siteStore=useSiteStore();
     if (resp.code === 0) {
       data.detail = resp.data.detail
       // 去除影视简介中的无用内容和特殊标签格式等
@@ -194,6 +202,8 @@ onBeforeMount(() => {
       data.detail.descriptor.director = handleLongText(data.detail.descriptor.director)
       data.currentTabId = resp.data.detail.list[0].id
       data.loading = true
+      siteStore.setTitle(data.detail.name)
+      siteStore.setDes(data.detail.descriptor.content)
     } else {
       ElMessage({
         type: "error",
@@ -201,6 +211,17 @@ onBeforeMount(() => {
         message: resp.msg,
       })
     }
+  }).finally( ()=> {
+    data.detail.list.map((item)=>{
+
+      p.ping(item.linkList[0].link).then(data => {
+        console.log("Successful ping: " + data);
+        item.ping=data
+      }).catch(data => {
+        console.error("Ping failed: " + data);
+      })
+    })
+    console.log("done!")
   })
 
 })

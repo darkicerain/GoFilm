@@ -15,13 +15,13 @@
     <div class="current_play_info">
       <div class="play_info_left">
         <h3 class="current_play_title"><a
-            :href="`/filmDetail?link=${data.detail.id}`">{{ data.detail.name }}</a>{{ data.current.episode }}</h3>
+            :href="`/filmDetail/${data.detail.id}`">{{ data.detail.name }}</a>{{ data.current.episode }}</h3>
         <div class="tags">
-          <a :href="`/filmClassifySearch?Pid=${data.detail.pid}&Category=${data.detail.cid}`">
+          <router-link :to="{name:'FilmClassifySearch',params:{Pid:data.detail.pid,Category:data.detail.cid}}" >
             <el-icon>
               <Promotion/>
             </el-icon>
-            {{ data.detail.descriptor.cName }}</a>
+            {{ data.detail.descriptor.cName }}</router-link>
           <span>{{
               data.detail.descriptor.classTag ? data.detail.descriptor.classTag.replaceAll(',', '/') : '未知'
             }}</span>
@@ -43,7 +43,10 @@
           <p class=" play-module-title">播放列表</p>
           <div class="play-tab-group">
             <a href="javascript:;" :class="`play-tab-item ${data.currentTabId == item.id ? 'tab-active':''}`"
-               v-for="item in data.detail.list" @click="changeTab(item.id)">{{ item.name }}</a>
+               v-for="item in data.detail.list" @click="changeTab(item.id)">
+              {{ item.name }}
+            <span v-if="item.ping" :class="item.ping>300?'red':'green'">{{item.ping}}ms</span>
+            </a>
           </div>
         </div>
         <div class="play-list">
@@ -92,12 +95,12 @@ import {cookieUtil, COOKIE_KEY_MAP} from '../../utils/cookie'
 import {VideoPlayer} from '@videojs-player/vue'
 import 'video.js/dist/video-js.css'
 import {fmt} from "../../utils/format";
-
+import Ping from "../../utils/speed";
 // 播放源切换事件
 const changeTab = (id: string) => {
   data.currentTabId = id
 }
-
+const p = new Ping();
 // 播放页所需数据
 const data = reactive({
   loading: false,
@@ -258,7 +261,7 @@ const saveFilmHisroy = () => {
     // 处理播放历史要记录的影片相关信息
     let player = document.getElementsByTagName("video")[0]
     let history = cookieUtil.getCookie(COOKIE_KEY_MAP.FILM_HISTORY) ? JSON.parse(cookieUtil.getCookie(COOKIE_KEY_MAP.FILM_HISTORY)) : {}
-    let link = `/play?id=${data.detail.id}&source=${data.currentTabId}&episode=${data.current.index}&currentTime=${player.currentTime}`
+    let link = `/play/${data.detail.id}/${data.currentTabId}/${data.current.index}/${player.currentTime}`
     // 处理播放时长
     let timeStamp = new Date().getTime()
     let time = fmt.dateFormat(timeStamp)
@@ -288,7 +291,7 @@ window.addEventListener('beforeunload', saveFilmHisroy)
 
 // 初始化页面数据
 onBeforeMount(() => {
-  let query = router.currentRoute.value.query
+  let query = router.currentRoute.value.params
   ApiGet(`/filmPlayInfo`, {id: query.id, playFrom: query.source, episode: query.episode}).then((resp: any) => {
     if (resp.code === 0) {
       data.detail = resp.data.detail
@@ -302,6 +305,18 @@ onBeforeMount(() => {
     } else {
       ElMessage.error({message: resp.msg})
     }
+
+  }).finally( ()=> {
+    data.detail.list.map((item)=>{
+
+      p.ping(item.linkList[0].link).then(data => {
+        console.log("Successful ping: " + data);
+        item.ping=data
+      }).catch(data => {
+            console.error("Ping failed: " + data);
+          })
+    })
+    console.log("done!")
   })
 })
 </script>
