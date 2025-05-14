@@ -20,7 +20,7 @@ const (
 	// MAXGoroutine max goroutine, 执行spider中对协程的数量限制
 	MAXGoroutine = 10
 
-	FilmPictureUploadDir = "./static/upload/gallery"
+	FilmPictureUploadDir = "/upload/gallery"
 	FilmPictureUrlPath   = "/upload/pic/poster/"
 	FilmPictureAccess    = "/api/upload/pic/poster/"
 )

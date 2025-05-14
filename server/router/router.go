@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"server/config"
 	"server/controller"
 	"server/plugin/middleware"
 )
@@ -14,7 +13,7 @@ func SetupRouter() *gin.Engine {
 	r.Use(middleware.Cors())
 
 	// 静态资源配置
-	r.Static(config.FilmPictureUrlPath, config.FilmPictureUploadDir)
+	r.Static("/static/", "./static/")
 
 	r.GET(`/index`, controller.Index)
 	r.GET(`/cache/del`, controller.IndexCacheDel)

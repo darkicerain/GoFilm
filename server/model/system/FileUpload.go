@@ -2,27 +2,33 @@ package system
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"go.beyondstorage.io/v5/types"
 	"gorm.io/gorm"
 	"log"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"server/config"
 	"server/plugin/common/util"
 	"server/plugin/db"
+	"server/plugin/storage"
 	"strings"
 )
 
 // FileInfo 图片信息对象
 type FileInfo struct {
 	gorm.Model
-	Link        string `json:"link"`        // 图片链接
-	Uid         int    `json:"uid"`         // 上传人ID
-	RelevanceId int64  `json:"relevanceId"` // 关联资源ID
-	Type        int    `json:"type"`        // 文件类型 (0 影片封面, 1 用户头像)
-	Fid         string `json:"fid"`         // 图片唯一标识, 通常为文件名
-	FileType    string `json:"fileType"`    // 文件类型, txt, png, jpg
+	Link        string `json:"link" gorm:"type:text"` // 图片链接
+	Uid         int    `json:"uid"`                   // 上传人ID
+	RelevanceId int64  `json:"relevanceId"`           // 关联资源ID
+	Type        int    `json:"type"`                  // 文件类型 (0 影片封面, 1 用户头像)
+	Fid         string `json:"fid"`                   // 图片唯一标识, 通常为文件名
+	FileType    string `json:"fileType"`              // 文件类型, txt, png, jpg
+	FileStorage string `json:fileStorage`
+	FilePath    string `json:filePath`
 	//Size        int    `json:"size"`        // 文件大小
 }
 
@@ -40,14 +46,42 @@ func (f *FileInfo) TableName() string {
 }
 
 // StoragePath 获取文件的保存路径
-func (f *FileInfo) StoragePath() string {
-	var storage string
-	switch f.FileType {
-	case "jpeg", "jpg", "png", "webp":
-		storage = strings.Replace(f.Link, config.FilmPictureAccess, fmt.Sprint(config.FilmPictureUploadDir, "/"), 1)
-	default:
+//
+//	func (f *FileInfo) StoragePath() string {
+//		var storage string
+//		switch f.FileType {
+//		case "jpeg", "jpg", "png", "webp":
+//			storage = strings.Replace(f.Link, config.FilmPictureAccess, fmt.Sprint(config.FilmPictureUploadDir, "/"), 1)
+//		default:
+//		}
+//		return storage
+//	}
+func (f *FileInfo) DelFile() error {
+	var store types.Storager = nil
+
+	var err error = nil
+	if f.FileStorage == "minio" {
+		store, err = storage.NewMinio()
+		if err != nil {
+			log.Print("minio err:", err)
+			return err
+		}
 	}
-	return storage
+	if f.FileStorage == "fs" {
+		store, err = storage.NewFs()
+		if err != nil {
+			log.Print("fs err:", err)
+			return err
+		}
+	}
+	if reflect.ValueOf(store).IsZero() {
+		return errors.New("wrong store")
+	}
+	err = store.Delete(f.FilePath)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CreateFileTable 创建图片关联信息存储表

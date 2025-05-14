@@ -1,11 +1,10 @@
 package logic
 
 import (
-	"fmt"
+	"os"
 	"path/filepath"
 	"server/config"
 	"server/model/system"
-	"server/plugin/common/util"
 	"strings"
 )
 
@@ -16,9 +15,14 @@ var FileL FileLogic
 
 func (fl *FileLogic) SingleFileUpload(fileName string, uid int) string {
 	// 生成图片信息
-	var f = system.FileInfo{Link: fmt.Sprint(config.FilmPictureAccess, filepath.Base(fileName)), Uid: uid, Type: 0}
+	var link = config.GetUrl(fileName)
+	var f = system.FileInfo{Link: link, FilePath: fileName, Uid: uid, Type: 0}
 	f.Fid = strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName))
 	f.FileType = strings.TrimPrefix(filepath.Ext(fileName), ".")
+	f.FileStorage = "fs"
+	if os.Getenv("STORAGE_TYPE") != "" {
+		f.FileStorage = os.Getenv("STORAGE_TYPE")
+	}
 	// 记录图片信息到系统表中
 	system.SaveGallery(f)
 	return f.Link
@@ -36,7 +40,7 @@ func (fl *FileLogic) RemoveFileById(id uint) error {
 	// 首先获取对应图片信息
 	f := system.GetFileInfoById(id)
 	// 通过f删除本地图片
-	err := util.RemoveFile(f.StoragePath())
+	err := f.DelFile()
 	if err != nil {
 		return err
 	}

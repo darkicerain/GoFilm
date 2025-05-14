@@ -26,7 +26,7 @@ package-lock.json
 .vscode/
 # 文件保留路径
 static/
-
+.env
 
 ProvideController.go
 ProvideLogic.go

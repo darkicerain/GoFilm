@@ -39,14 +39,16 @@ func start() {
 
 func DefaultDataInit() {
 	// 如果系统中不存在用户表则进行初始化
+
 	if !system.ExistUserTable() {
 		// 初始化数据库相关数据
-		SystemInit.TableInIt()
+
 		// 初始化网站基本配置信息
 		SystemInit.BasicConfigInit()
 		// 初始化轮播组件信息
 		SystemInit.BannersInit()
 	}
+	SystemInit.TableInIt()
 	// 初始化影视来源列表信息, 并回复恢复定时任务
 	SystemInit.SpiderInit()
 }

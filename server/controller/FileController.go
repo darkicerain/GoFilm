@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"path/filepath"
 	"server/config"
 	"server/logic"
@@ -28,8 +29,10 @@ func SingleUpload(c *gin.Context) {
 
 	// 生成文件名, 保存文件到服务器
 	fileName := fmt.Sprintf("%s/%s%s", config.FilmPictureUploadDir, util.RandomString(8), filepath.Ext(file.Filename))
-	err = c.SaveUploadedFile(file, fileName)
+	//err = c.SaveUploadedFile(file, fileName)
+	err = config.SaveFile(file, fileName)
 	if err != nil {
+		log.Print("upload err:", err)
 		system.Failed(err.Error(), c)
 		return
 	}
@@ -67,7 +70,7 @@ func MultipleUpload(c *gin.Context) {
 	for _, file := range files {
 		// 生成文件名, 保存文件到服务器
 		fileName := fmt.Sprintf("%s/%s%s", config.FilmPictureUploadDir, util.RandomString(8), filepath.Ext(file.Filename))
-		err = c.SaveUploadedFile(file, fileName)
+		err = config.SaveFile(file, fileName)
 		if err != nil {
 			system.Failed(err.Error(), c)
 			return
